@@ -1,0 +1,87 @@
+---
+- name: print all available facts
+  debug:
+    var: ansible_facts
+
+- name: install misc requirements common to the RedHat family
+  yum:
+    state: present
+    name:
+      - nano
+      - which
+      - rsync
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+
+- name: setup RedHat 8 family
+  block:
+  - name: install misc requirements common to the RedHat 8 family
+    yum:
+      state: present
+      name:
+        - python39
+        - python39-wheel
+        - python39-cryptography
+        - python39-pyOpenSSL
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - ansible_facts['distribution_major_version']|int == 8
+
+- name: setup RedHat 7 family
+  block:
+  - name: install misc requirements common to the RedHat 7 family
+    yum:
+      state: present
+      name:
+        - python36
+        - python36-wheel
+        - python36-cryptography
+        - python36-pyOpenSSL
+  - name: Register python2 as an alternative for the RedHat 7 family
+    shell: alternatives --install /usr/bin/python python /usr/bin/python2 50
+  - name: Register python3.6 as an alternative for the RedHat 7 family
+    shell: /usr/sbin/alternatives --install /usr/bin/python python /usr/bin/python3.6 60
+  - name: set alternatives to use python 3.6 for python for the RedHat 7 family
+    shell: /usr/sbin/alternatives --set python /usr/bin/python3.6
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - ansible_facts['distribution_major_version']|int == 7
+
+- name: generate key
+  community.crypto.openssl_privatekey:
+    path: "/etc/pki/tls/private/{{ nexus_public_hostname }}.key"
+    size: 2048 
+
+- name: generate csr
+  community.crypto.openssl_csr:
+    path: "/etc/pki/tls/private/{{ nexus_public_hostname }}.csr"
+    privatekey_path: "/etc/pki/tls/private/{{ nexus_public_hostname }}.key"
+
+- name: Generate a Self Signed OpenSSL certificate
+  community.crypto.x509_certificate:
+    path: "/etc/pki/tls/certs/{{ nexus_public_hostname }}.crt"
+    privatekey_path: "/etc/pki/tls/private/{{ nexus_public_hostname }}.key"
+    csr_path: "/etc/pki/tls/private/{{ nexus_public_hostname }}.csr"
+    provider: selfsigned
+
+- name: reset alternatives to use python 2 for python for the RedHat 7 family
+  shell: /usr/sbin/alternatives --set python /usr/bin/python2
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - ansible_facts['distribution_major_version']|int == 7
+
+- name: permit traffic in public zone for http and https services
+  firewalld:
+    zone: public
+    service: "{{ item }}"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  with_items:
+    - http
+    - https
+
+- name: reload service firewalld
+  systemd:
+    name: firewalld
+    state: reloaded

@@ -1,0 +1,24 @@
+# http_proxy="" curl -v -u admin:admin123 -H "Accept: application/json" -H "Content-Type: application/octet-stream" --data-binary @/home/vagrant/config/sonatype-nexus-license.lic "http://localhost:8081/service/rest/beta/system/license"
+---
+- name: check for nexus pro license file
+  local_action: stat path={{ role_path }}/files/sonatype-nexus-license.lic
+  become: no
+  register: license_file
+
+- name: adding nexus pro license
+  uri:
+    url: http://localhost:8081/service/rest/beta/system/license
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/octet-stream
+    src: sonatype-nexus-license.lic
+    user: admin
+    password: admin123
+    force_basic_auth: yes
+  ignore_errors: yes
+  when: license_file.stat.exists
+  notify:
+    - nexus-service-restart
+    - wait-for-nexus
+    - wait-for-nexus-port

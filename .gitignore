@@ -1,0 +1,4 @@
+**/*.lic
+.shared/
+.vagrant/
+venv/

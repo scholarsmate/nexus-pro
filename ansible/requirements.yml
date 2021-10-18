@@ -1,0 +1,4 @@
+# Ansible roles, install using ansible-galaxy install -r requirements.yml --roles-path=./roles
+- geerlingguy.java, 1.10.0
+- ansible-thoteam.nexus3-oss, v2.4.15
+- geerlingguy.apache, 3.2.0
