@@ -55,21 +55,29 @@
 
   when: nexus_version | length == 0
 
-- name: Register nexus package name
-  set_fact:
-    nexus_package: "nexus-{{ nexus_version }}-unix.tar.gz"
-
 - name: Print info about detected version to use
   vars:
     version_info: |-
       Used version: {{ nexus_version }}
-      url: {{ nexus_download_url }}/{{ nexus_package }}
-      dest: {{ nexus_download_dir }}/{{ nexus_package }}
       Version detected from: {{ nexus_version_detected_from }}
       Upgrade allowed: {{ nexus_upgrade | default(false) | bool }}
       Current running version: {{ nexus_version_running | default('none') }}
   debug:
     msg: "{{ version_info.split('\n') }}"
+
+- name: Register nexus package name
+  set_fact:
+    nexus_package: "nexus-{{ nexus_version }}-unix.tar.gz"
+
+- name: Copy nexus package to remote
+  copy:
+    src: "{{ local_resource_prefix }}/packages/{{ nexus_package }}"
+    dest: "{{ nexus_download_dir }}/{{ nexus_package }}"
+
+- name: Check nexus package
+  stat:
+    path: "{{ nexus_download_dir }}/{{ nexus_package }}"
+  register: nexus_package_file
 
 - name: Download nexus_package
   get_url:
@@ -79,13 +87,15 @@
     validate_certs: "{{ nexus_download_ssl_verify | default(omit) }}"
   notify:
     - nexus-service-stop
+  when:
+    - nexus_package_file.stat.exits | bool == false
 
-- name: Ensure Nexus o/s group exists
+- name: Ensure Nexus OS group exists
   group:
     name: "{{ nexus_os_group }}"
     state: present
 
-- name: Ensure Nexus o/s user exists
+- name: Ensure Nexus OS user exists
   user:
     name: "{{ nexus_os_user }}"
     group: "{{ nexus_os_group }}"
@@ -431,25 +441,12 @@
     dest: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/deploy/"
   with_items: "{{ nexus_plugin_urls }}"
 
-- name: Access scripts API endpoint with defined admin password
-  uri:
-    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}\
-      {{ nexus_api_context_path }}{{ nexus_rest_api_endpoint }}"
-    method: 'HEAD'
-    user: 'admin'
-    password: "{{ nexus_admin_password }}"
-    force_basic_auth: yes
-    status_code: 200, 401
-    validate_certs: "{{ nexus_api_validate_certs }}"
-  register: nexus_api_head_with_defined_password
-  check_mode: no
-
-- name: Check for nexus pro license file
+- name: Check for nexus license file
   local_action: stat path={{ role_path }}/files/sonatype-nexus-license.lic
   become: no
-  register: license_file
+  register: nexus_license_file
 
-- name: Adding nexus pro license
+- name: Add nexus license
   uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}\
       /service/rest/beta/system/license"
@@ -463,11 +460,24 @@
     force_basic_auth: yes
     validate_certs: "{{ nexus_api_validate_certs }}"
   ignore_errors: yes
-  when: license_file.stat.exists
+  when: nexus_license_file.stat.exists
   notify:
     - nexus-service-restart
     - wait-for-nexus
     - wait-for-nexus-port
+
+- name: Access scripts API endpoint with defined admin password
+  uri:
+    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}\
+      {{ nexus_api_context_path }}{{ nexus_rest_api_endpoint }}"
+    method: 'HEAD'
+    user: 'admin'
+    password: "{{ nexus_admin_password }}"
+    force_basic_auth: yes
+    status_code: 200, 401
+    validate_certs: "{{ nexus_api_validate_certs }}"
+  register: nexus_api_head_with_defined_password
+  check_mode: no
 
 - name: Register defined admin password for next operations
   set_fact:
