@@ -55,19 +55,21 @@
 
   when: nexus_version | length == 0
 
+- name: Register nexus package name
+  set_fact:
+    nexus_package: "nexus-{{ nexus_version }}-unix.tar.gz"
+
 - name: Print info about detected version to use
   vars:
     version_info: |-
       Used version: {{ nexus_version }}
+      url: {{ nexus_download_url }}/{{ nexus_package }}
+      dest: {{ nexus_download_dir }}/{{ nexus_package }}
       Version detected from: {{ nexus_version_detected_from }}
       Upgrade allowed: {{ nexus_upgrade | default(false) | bool }}
       Current running version: {{ nexus_version_running | default('none') }}
   debug:
     msg: "{{ version_info.split('\n') }}"
-
-- name: Register nexus package name
-  set_fact:
-    nexus_package: "nexus-{{ nexus_version }}-unix.tar.gz"
 
 - name: Download nexus_package
   get_url:

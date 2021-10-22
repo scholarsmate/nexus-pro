@@ -1,0 +1,28 @@
+[nexus_rhel7]
+name = Nexus RHEL 7 Base OS Proxy
+ui_repoid_vars = releasever basearch
+baseurl = {{ nexus_public_scheme }}://127.0.0.1/repository/rhel7-proxy/$releasever/$basearch/os
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+enabled_metadata = 1
+priority = 1
+
+[nexus_rhel7_appstream]
+name = Nexus RHEL 7 AppStream Proxy
+ui_repoid_vars = releasever basearch
+baseurl = {{ nexus_public_scheme }}://127.0.0.1/repository/rhel7-proxy/$releasever/$basearch/appstream/os
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 0
+enabled_metadata = 1
+priority = 1
+
+[nexus_epel7]
+name = Nexus EPEL 7 AppStream Proxy
+ui_repoid_vars = releasever basearch
+baseurl = {{ nexus_public_scheme }}://127.0.0.1/repository/epel7-proxy/$releasever/$basearch
+gpgcheck = 0
+enabled = 0
+enabled_metadata = 1
+priority = 1

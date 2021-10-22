@@ -72,7 +72,7 @@ nexus_default_admin_password: 'admin123'
 # Note: this should be vault encrypted in your playbook.
 nexus_admin_password: 'changeme'
 
-nexus_anonymous_access: false
+nexus_anonymous_access: true
 
 nexus_public_hostname: 'nexus.vm'
 nexus_public_scheme: https

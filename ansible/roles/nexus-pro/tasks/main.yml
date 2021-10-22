@@ -1,11 +1,43 @@
-# http_proxy="" curl -v -u admin:admin123 -H "Accept: application/json" -H "Content-Type: application/octet-stream" --data-binary @/home/vagrant/config/sonatype-nexus-license.lic "http://localhost:8081/service/rest/beta/system/license"
 ---
-- name: check for nexus pro license file
+- name: Setup keystore with RHEL entitlement PKI
+  block:
+  - name: Discover crt name
+    shell: "ls /etc/pki/entitlement/ | grep key.pem$ | xargs basename | cut -d- -f1"
+    register: crt_name
+  - name: Export crt and key to p12
+    command:
+      cmd: "/usr/bin/openssl pkcs12 -export -in /etc/pki/entitlement/{{ crt_name.stdout }}.pem -inkey /etc/pki/entitlement/{{ crt_name.stdout }}-key.pem -name certificate_and_key -out {{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/ssl/certificate_and_key.p12 -passout pass:password"
+      creates: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/ssl/certificate_and_key.p12"
+  - name: Import crt and key to keystore
+    command:
+      cmd: "/usr/bin/keytool -importkeystore -srckeystore {{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/ssl/certificate_and_key.p12 -srcstoretype PKCS12 -srcstorepass password -deststorepass password -destkeystore {{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/ssl/keystore.p12 -deststoretype PKCS12"
+      creates: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/ssl/keystore.p12"
+  - name: Configure keystore in jvm
+    lineinfile:
+      path: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/bin/nexus.vmoptions"
+      search_string: '-Djavax.net.ssl.keyStore'
+      line: "-Djavax.net.ssl.keyStore={{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/ssl/keystore.p12"
+  - name: Configure keystore password in jvm
+    lineinfile:
+      path: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/bin/nexus.vmoptions"
+      search_string: '-Djavax.net.ssl.keyStorePassword'
+      line: '-Djavax.net.ssl.keyStorePassword=password'
+  - name: Adding the yum repos file
+    template:
+      src: nexus-rhel7.repo.j2
+      dest: /etc/yum.repos.d/nexus-rhel7.repo
+      owner: root
+      group: root
+      mode: u=rw,g=r,o=r
+  tags:
+    - rhel
+
+- name: Check for nexus pro license file
   local_action: stat path={{ role_path }}/files/sonatype-nexus-license.lic
   become: no
   register: license_file
 
-- name: adding nexus pro license
+- name: Add nexus pro license
   uri:
     url: http://localhost:8081/service/rest/beta/system/license
     method: POST
@@ -22,3 +54,8 @@
     - nexus-service-restart
     - wait-for-nexus
     - wait-for-nexus-port
+
+- name: Restart Nexus
+  service:
+      name: nexus
+      state: restarted
