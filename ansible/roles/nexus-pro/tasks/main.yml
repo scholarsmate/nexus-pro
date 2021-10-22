@@ -22,10 +22,10 @@
       path: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/bin/nexus.vmoptions"
       search_string: '-Djavax.net.ssl.keyStorePassword'
       line: '-Djavax.net.ssl.keyStorePassword=password'
-  - name: Adding the yum repos file
+  - name: Add the yum repos file
     template:
-      src: nexus-rhel7.repo.j2
-      dest: /etc/yum.repos.d/nexus-rhel7.repo
+      src: "nexus-{{ ansible_distribution|title }}-{{ ansible_distribution_version.split('.')[0] }}.repo.j2"
+      dest: "/etc/yum.repos.d/nexus-{{ ansible_distribution|title }}-{{ ansible_distribution_version.split('.')[0] }}.repo"
       owner: root
       group: root
       mode: u=rw,g=r,o=r
@@ -50,10 +50,14 @@
     force_basic_auth: yes
   ignore_errors: yes
   when: license_file.stat.exists
-  notify:
-    - nexus-service-restart
-    - wait-for-nexus
-    - wait-for-nexus-port
+
+- name: Add the pip.conf file
+  template:
+    src: pip.conf.j2
+    dest: /etc/pip.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
 
 - name: Restart Nexus
   service:

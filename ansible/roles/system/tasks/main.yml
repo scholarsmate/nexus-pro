@@ -22,7 +22,7 @@
         - python39
         - python39-wheel
         - python39-cryptography
-        - python39-pyOpenSSL
+        - python3-pyOpenSSL
   when:
     - ansible_facts['os_family'] == "RedHat"
     - ansible_facts['distribution_major_version']|int == 8

@@ -56,19 +56,11 @@
         typeId: blobstore.compact
         taskProperties:
           blobstoreName: 'company-artifacts'
-    nexus_repos_maven_proxy:
-      - name: central
-        remote_url: 'https://repo1.maven.org/maven2/'
-        layout_policy: permissive
-    nexus_repos_maven_group:
-      - name: public
-        member_repos:
-          - central
     # Yum. Change nexus_config_yum to true for create yum repository
     nexus_config_yum: true
     nexus_repos_yum_proxy:
       - name: epel7-proxy
-        remote_url: http://download.fedoraproject.org/pub/epel/7/x86_64
+        remote_url: https://mirrors.sonic.net/epel/7/x86_64
         maximum_component_age: -1
         maximum_metadata_age: -1
         negative_cache_ttl: 60
@@ -79,11 +71,34 @@
         maximum_metadata_age: -1
         negative_cache_ttl: 60
         blob_store: company-artifacts
+      - name: rhel8-proxy
+        remote_url: https://cdn.redhat.com/content/dist/rhel8
+        maximum_component_age: -1
+        maximum_metadata_age: -1
+        negative_cache_ttl: 60
+        blob_store: company-artifacts
     nexus_repos_yum_group:
-      - name: yum_all
+      - name: yum-all
         member_repos:
           - epel7-proxy
           - rhel7-proxy
+    nexus_config_pypi: true
+    nexus_repos_pypi_hosted:
+      - name: pypi-hosted
+    nexus_repos_pypi_proxy:
+      - name: pypi-proxy
+        index_type: "proxy"
+        remote_url: "https://pypi.org/"
+        use_nexus_certificates_to_access_index: false
+        maximum_component_age: 1440
+        maximum_metadata_age: 1440
+        negative_cache_enabled: true
+        negative_cache_ttl: 1440
+    nexus_repos_pypi_group:
+      - name: pypi-all
+        member_repos:
+          - pypi-hosted
+          - pypi-proxy
 
   roles:
     - role: system

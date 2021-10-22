@@ -1,0 +1,19 @@
+[nexus_rhel8]
+name = Nexus {{ ansible_distribution|title }} {{ ansible_distribution_version.split('.')[0] }} Base OS Proxy
+baseurl = {{ nexus_public_scheme }}://localhost/repository/rhel8-proxy/$releasever/$basearch/baseos/os
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+enabled_metadata = 1
+priority = 1
+sslverify = False
+
+[nexus_rhel8_appstream]
+name = Nexus {{ ansible_distribution|title }} {{ ansible_distribution_version.split('.')[0] }} AppStream Proxy
+baseurl = {{ nexus_public_scheme }}://localhost/repository/rhel8-proxy/$releasever/$basearch/appstream/os
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+enabled_metadata = 1
+priority = 1
+sslverify = False
