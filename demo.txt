@@ -1,0 +1,31 @@
+NEXUS PRO DEMO
+
+# remove any old exports
+rm -rf ~/git/nexus-pro/.shared/nexus/export/*
+
+# create the nexus vm
+sudo -v && vagrant destroy --force && time vagrant up
+
+# login
+vagrant ssh
+
+# upgrade pip and install black and pandas
+python3 -m venv venv
+source ./venv/bin/activate
+pip install --upgrade pip
+pip install black pandas
+
+# install netcat and emacs
+sudo yum install -y nc emacs
+
+# create an ISO of the exports
+/usr/bin/mkisofs -J -l -R -V “nexus-export” -o /shared/nexus/export/nexus-export.iso /tmp/export
+
+/******************/
+
+# Mount the ISO and import the repos
+sudo mkdir -p /mnt/nexus-export && sudo mount /shared/nexus/export/nexus-export.iso /mnt/nexus-export
+
+/mnt/nexus-export/pypi
+/mnt/nexus-export/yum
+

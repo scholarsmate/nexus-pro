@@ -46,7 +46,7 @@
       Content-Type: application/octet-stream
     src: sonatype-nexus-license.lic
     user: admin
-    password: admin123
+    password: "{{ nexus_admin_password }}"
     force_basic_auth: yes
   ignore_errors: yes
   when: license_file.stat.exists
@@ -63,3 +63,9 @@
   service:
       name: nexus
       state: restarted
+
+- name: Setup Nexus export directory
+  file:
+    path: /shared/nexus/export
+    state: directory
+    mode: "u=rwx,g=rwx,o=rwx"

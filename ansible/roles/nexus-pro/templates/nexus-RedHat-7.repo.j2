@@ -1,6 +1,6 @@
 [nexus_rhel7]
-name = Nexus {{ ansible_distribution|title }} {{ ansible_distribution_version.split('.')[0] }} Base OS Proxy
-baseurl = {{ nexus_public_scheme }}://localhost/repository/rhel7-proxy/$releasever/$basearch/os
+name = Nexus {{ ansible_distribution|title }} {{ ansible_distribution_version.split('.')[0] }} Base OS
+baseurl = {{ nexus_public_scheme }}://localhost/repository/yum-all/$releasever/$basearch/os
 gpgcheck = 1
 gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 enabled = 1
@@ -9,8 +9,8 @@ priority = 1
 sslverify = False
 
 [nexus_rhel7_appstream]
-name = Nexus {{ ansible_distribution|title }} {{ ansible_distribution_version.split('.')[0] }} AppStream Proxy
-baseurl = {{ nexus_public_scheme }}://localhost/repository/rhel7-proxy/$releasever/$basearch/appstream/os
+name = Nexus {{ ansible_distribution|title }} {{ ansible_distribution_version.split('.')[0] }} AppStream
+baseurl = {{ nexus_public_scheme }}://localhost/repository/yum-all/$releasever/$basearch/appstream/os
 gpgcheck = 1
 gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 enabled = 1
@@ -19,8 +19,8 @@ priority = 1
 sslverify = False
 
 [nexus_epel7]
-name = Nexus EPEL 7 AppStream Proxy
-baseurl = {{ nexus_public_scheme }}://localhost/repository/epel7-proxy/$releasever/$basearch
+name = Nexus EPEL 7 AppStream
+baseurl = {{ nexus_public_scheme }}://localhost/repository/yum-all/$releasever/$basearch
 gpgcheck = 0
 enabled = 0
 enabled_metadata = 1

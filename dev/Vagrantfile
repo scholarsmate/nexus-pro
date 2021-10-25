@@ -16,8 +16,9 @@ Dir.mkdir '../.shared/' unless File.exists?('../.shared/')
 Vagrant.configure("2") do |config|
   config.vm.box = "generic/rhel8"
   config.vm.hostname = "#{dirname}.vm"
-  config.vm.network :private_network, ip: "10.4.1.28"
+  config.vm.network :private_network, ip: "10.4.1.18"
 
+  config.vm.provision "shell", privileged: true, inline: "yum update -y"
   config.vbguest.auto_update = true
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.provider "virtualbox" do |vb|

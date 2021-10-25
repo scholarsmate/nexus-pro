@@ -3,6 +3,11 @@
   debug:
     var: ansible_facts
 
+- name: Update system
+  yum:
+    name: "*"
+    state: latest
+
 - name: Install misc requirements common to the RedHat family
   yum:
     state: present
@@ -10,6 +15,7 @@
       - nano
       - which
       - rsync
+      - genisoimage
   when:
     - ansible_facts['os_family'] == "RedHat"
 

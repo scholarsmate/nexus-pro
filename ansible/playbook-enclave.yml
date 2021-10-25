@@ -59,33 +59,6 @@
           blobstoreName: 'company-artifacts'
     nexus_config_yum: true
     nexus_config_pypi: true
-    nexus_repos_yum_proxy:
-      - name: epel7-proxy
-        remote_url: https://mirrors.sonic.net/epel/7/x86_64
-        maximum_component_age: -1
-        maximum_metadata_age: -1
-        negative_cache_ttl: 60
-        blob_store: company-artifacts
-      - name: rhel7-proxy
-        remote_url: https://cdn.redhat.com/content/dist/rhel/server/7
-        maximum_component_age: -1
-        maximum_metadata_age: -1
-        negative_cache_ttl: 60
-        blob_store: company-artifacts
-      - name: rhel8-proxy
-        remote_url: https://cdn.redhat.com/content/dist/rhel8
-        maximum_component_age: -1
-        maximum_metadata_age: -1
-        negative_cache_ttl: 60
-        blob_store: company-artifacts
-    nexus_repos_pypi_proxy:
-      - name: pypi-proxy
-        index_type: "proxy"
-        remote_url: "https://pypi.org/"
-        maximum_component_age: -1
-        maximum_metadata_age: -1
-        negative_cache_ttl: 60
-        blob_store: company-artifacts
     nexus_repos_yum_hosted:
       - name: rhel7-hosted
         blob_store: company-artifacts
